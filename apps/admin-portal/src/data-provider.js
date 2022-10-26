@@ -22,7 +22,9 @@ const dataProvider = {
   },
 
   getOne: async (resource, params) => {
-    throw new Error("not implemented");
+    const mapper = getMapper(resource, "getOne");
+    return await mapper(params);
+    // throw new Error("not implemented");
   },
   getMany: async (resource, params) => {
     throw new Error("not implemented");
@@ -35,7 +37,8 @@ const dataProvider = {
     return await mapper(params);
   },
   update: async (resource, params) => {
-    throw new Error("not implemented");
+    const mapper = getMapper(resource, "update");
+    return await mapper(params);
   },
   updateMany: async (resource, params) => {
     throw new Error("not implemented");

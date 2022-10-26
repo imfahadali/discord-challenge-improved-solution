@@ -64,6 +64,7 @@ export class LocationService {
       country.countryName = countryName;
       country.cities = [];
 
+
       cities?.forEach((cityName) => {
         const city = new CityEntity();
         city.name = cityName;
@@ -82,6 +83,7 @@ export class LocationService {
 
   public async update(
     id: string,
+    countryName: string,
     {
       cityIdsToRemove = [],
       cityNamesToAdd = [],
@@ -95,7 +97,7 @@ export class LocationService {
       if (!location) {
         throw new Error("Location not found");
       }
-
+      location.countryName = countryName
       cityNamesToAdd.forEach((cityName) => {
         const city = new CityEntity();
         city.name = cityName;
@@ -124,6 +126,32 @@ export class LocationService {
         relations: this._relations,
       });
       return okAsync(locations);
+    } catch (error) {
+      console.log("LocationService.findAll", error);
+      return errAsync(null);
+    }
+  }
+  public async findOne(
+    locationID: string
+  ): Promise<ResultAsync<LocationEntity, null>> {
+    try {
+      const location = await this.locationRepository.findOne({
+        relations: this._relations,
+        where: { id: locationID },
+      });
+
+      return okAsync(location);
+    } catch (error) {
+      console.log("LocationService.findAll", error);
+      return errAsync(null);
+    }
+  }
+  public async getAllCities(): Promise<ResultAsync<CityEntity[], null>> {
+    try {
+      const cities = await this.cityRepository.find({
+        relations: ["location"],
+      });
+      return okAsync(cities);
     } catch (error) {
       console.log("LocationService.findAll", error);
       return errAsync(null);

@@ -11,7 +11,7 @@ import {
 import { Service } from "typedi";
 import { BaseEntity } from "typeorm";
 import { dataSource } from "../../data-source";
-import { LocationEntity } from "../../entities";
+import { CityEntity, LocationEntity } from "../../entities";
 import { LocationService } from "../../services/location-service";
 import { falsyToInvalidId, whereIdIs } from "../../shared/utils";
 
@@ -23,12 +23,31 @@ export default class LocationResolver {
   @Query(() => [LocationEntity])
   async getAllLocations(): Promise<LocationEntity[]> {
     const locationsResult = await this.locationService.findAll();
-
     if (locationsResult.isOk()) {
       return locationsResult.value;
     }
 
     throw new Error("LocationResolver.getAllLocations");
+  }
+  @Query(() => LocationEntity)
+  async getALocation(@Arg("id") id: string): Promise<LocationEntity> {
+    const locationResult = await this.locationService.findOne(id);
+    if (locationResult.isOk()) {
+      return locationResult.value;
+    }
+
+    throw new Error("LocationResolver.getAllLocations");
+  }
+
+  @Query(() => [CityEntity])
+  async getAllCities(): Promise<CityEntity[]> {
+    const locationsResult = await this.locationService.getAllCities();
+
+    if (locationsResult.isOk()) {
+      return locationsResult.value;
+    }
+
+    throw new Error("LocationResolver.getAllCities");
   }
 
   @Mutation(() => String)
@@ -57,18 +76,35 @@ export default class LocationResolver {
   }
 
   @Mutation(() => LocationEntity)
-  async createCity(
-    @Arg("locationId") locationId: string,
-    @Arg("cityName") cityName: string
+  async updateLocation(
+    @Arg("id") id: string,
+    @Arg("countryName") countryName: string,
+    @Arg("cityIdsToRemove", () => [String!]!) cityIdsToRemove: string[],
+    @Arg("cityNamesToAdd", () => [String!]!) cityNamesToAdd: string[]
   ) {
-    const result = await this.locationService.update(locationId, {
-      cityNamesToAdd: [cityName],
+    const createResult = await this.locationService.update(id,countryName, {
+      cityNamesToAdd,
+      cityIdsToRemove,
     });
-
-    if (result.isOk()) {
-      return result.value;
+    if (createResult.isOk()) {
+      return createResult.value;
     }
-
-    throw new Error("LocationResolver.createCity");
+    throw new Error("LocationResolver.create");
   }
+
+  // @Mutation(() => LocationEntity)
+  // async createCity(
+  //   @Arg("locationId") locationId: string,
+  //   @Arg("cityName") cityName: string
+  // ) {
+  //   const result = await this.locationService.update(locationId, {
+  //     cityNamesToAdd: [cityName],
+  //   });
+
+  //   if (result.isOk()) {
+  //     return result.value;
+  //   }
+
+  //   throw new Error("LocationResolver.createCity");
+  // }
 }
